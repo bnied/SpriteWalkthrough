@@ -14,6 +14,15 @@
 @end
 
 @implementation SpaceshipScene
+
+static inline CGFloat skRandf() {
+    return rand() / (CGFloat) RAND_MAX;
+}
+
+static inline CGFloat skRand(CGFloat low, CGFloat high) {
+    return skRandf() * (high - low) + low;
+}
+
 - (void)didMoveToView:(SKView *)view
 {
     if (!self.contentCreated)
@@ -31,20 +40,41 @@
     spaceship.position = CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame)-150);
     [self addChild:spaceship];
     
+    SKSpriteNode *spaceship2 = [self newSpaceship];
+    spaceship2.position = CGPointMake(CGRectGetMidX(self.frame)/2, CGRectGetMidY(self.frame)-150);
+    [self addChild:spaceship2];
+    
+    SKSpriteNode *spaceship3 = [self newSpaceship];
+    spaceship3.position = CGPointMake(CGRectGetMidX(self.frame) + CGRectGetMidX(self.frame)/2, CGRectGetMidY(self.frame)-150);
+    [self addChild:spaceship3];
+    
     SKAction *makeRocks = [SKAction sequence: @[
                                                 [SKAction performSelector:@selector(addRock) onTarget:self],
-                                                [SKAction waitForDuration:0.10 withRange:0.15]
+                                                [SKAction waitForDuration:0.05 withRange:0.05]
                                                 ]];
     [self runAction: [SKAction repeatActionForever:makeRocks]];
 }
 
 - (SKSpriteNode *)newSpaceship
 {
-    SKSpriteNode *hull = [[SKSpriteNode alloc] initWithColor:[SKColor grayColor] size:CGSizeMake(128,64)];
+    SKSpriteNode *hull = [[SKSpriteNode alloc] initWithColor:[SKColor grayColor] size:CGSizeMake(128,32)];
     
     SKAction *hover = [SKAction sequence:@[
-                                           [SKAction rotateByAngle:1080 duration:1.0],
-                                           [SKAction waitForDuration:1.0]]];
+                                           [SKAction rotateToAngle:M_PI duration:0.5],
+                                           [SKAction colorizeWithColor:[SKColor greenColor] colorBlendFactor:0 duration:0.5],
+                                           [SKAction waitForDuration:5.0],
+                                           [SKAction rotateToAngle:M_PI_2 duration:0.5],
+                                           [SKAction colorizeWithColor:[SKColor redColor] colorBlendFactor:0 duration:0.5],
+                                           [SKAction waitForDuration:5.0],
+                                           [SKAction rotateToAngle:M_PI_4 duration:0.5],
+                                           [SKAction colorizeWithColor:[SKColor blueColor] colorBlendFactor:0 duration:0.5],
+                                           [SKAction waitForDuration:5.0],
+                                           [SKAction rotateToAngle:M_PI * 6 duration:0.5],
+                                           [SKAction colorizeWithColor:[SKColor yellowColor] colorBlendFactor:0 duration:0.5],
+                                           [SKAction waitForDuration:5.0],
+                                           [SKAction rotateToAngle:M_PI * 8 duration:0.5],
+                                           [SKAction colorizeWithColor:[SKColor grayColor] colorBlendFactor:0 duration:0.5],
+                                           [SKAction waitForDuration:5.0]]];
     [hull runAction: [SKAction repeatActionForever:hover]];
     
     SKSpriteNode *light1 = [self newLight];
@@ -57,6 +87,8 @@
     
     hull.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:hull.size];
     hull.physicsBody.dynamic = NO;
+    hull.physicsBody.usesPreciseCollisionDetection = YES;
+    hull.physicsBody.affectedByGravity = YES;
     
     
     return hull;
@@ -75,21 +107,16 @@
     return light;
 }
 
-static inline CGFloat skRandf() {
-    return rand() / (CGFloat) RAND_MAX;
-}
-
-static inline CGFloat skRand(CGFloat low, CGFloat high) {
-    return skRandf() * (high - low) + low;
-}
-
 - (void)addRock
 {
     SKSpriteNode *rock = [[SKSpriteNode alloc] initWithColor:[SKColor brownColor] size:CGSizeMake(8,8)];
-    rock.position = CGPointMake(skRand(0, self.size.width), self.size.height-50);
+    rock.position = CGPointMake(skRand(0, self.size.width), self.size.height);
     rock.name = @"rock";
     rock.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:rock.size];
+    rock.physicsBody.affectedByGravity = YES;
     rock.physicsBody.usesPreciseCollisionDetection = YES;
+    rock.physicsBody.density = 1.0;
+    rock.physicsBody.mass = 100.0;
     [self addChild:rock];
 }
 
